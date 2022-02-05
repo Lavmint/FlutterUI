@@ -14,6 +14,7 @@ private struct _StreamBuilderState<T: Hashable> {
     var animation: Animation? = .default
 }
 
+/// https://api.flutter.dev/flutter/widgets/StreamBuilder-class.html
 public struct StreamBuilder<T: Hashable, Content: View>: View {
     
     let initialData: T?

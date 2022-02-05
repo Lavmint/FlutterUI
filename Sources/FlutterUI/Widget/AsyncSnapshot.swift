@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// https://api.flutter.dev/flutter/widgets/AsyncSnapshot-class.html
 public struct AsyncSnapshot<T: Hashable>: Hashable {
     
     public let connectionState: ConnectionState

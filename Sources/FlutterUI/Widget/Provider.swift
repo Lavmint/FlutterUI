@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+/// https://pub.dev/packages/provider
 public struct Provider<Provider, Content: View>: View {
     
     @EnvironmentObject var multiProvider: MultiProvider
@@ -21,4 +22,16 @@ public struct Provider<Provider, Content: View>: View {
         content(multiProvider.provide(instanceOf: Provider.self))
     }
 
+}
+
+open class MultiProvider: ObservableObject {
+    
+    public init() {
+        
+    }
+    
+    open func provide<T>(instanceOf: T.Type) -> T {
+        fatalError()
+    }
+    
 }

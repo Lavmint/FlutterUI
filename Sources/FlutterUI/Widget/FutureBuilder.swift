@@ -14,6 +14,7 @@ private struct _FutureBuilderState<T: Hashable> {
     var animation: Animation? = .default
 }
 
+/// https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html
 public struct FutureBuilder<T: Hashable, Content: View>: View {
     
     let future: AnyPublisher<T, Error>
