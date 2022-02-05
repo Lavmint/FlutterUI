@@ -55,4 +55,10 @@ public struct FutureBuilder<T: Hashable, Content: View>: View {
             .receive(on: OperationQueue.main)
             .eraseToAnyPublisher()
     }
+    
+    public func setAnimation(_ animation: Animation?) -> Self {
+        let copy = self
+        copy.state.animation = animation
+        return copy
+    }
 }
