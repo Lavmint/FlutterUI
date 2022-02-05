@@ -9,33 +9,38 @@ import Foundation
 import Combine
 import SwiftUI
 
+private struct _FutureBuilderState<T: Hashable> {
+    var snapshot: AsyncSnapshot<T> = .nothing()
+    var animation: Animation? = .default
+}
+
 public struct FutureBuilder<T: Hashable, Content: View>: View {
     
     let future: AnyPublisher<T, Error>
     let initialData: T?
     let content: (AsyncSnapshot<T>) -> Content
     
-    @State var snapshot: AsyncSnapshot<T> = .nothing()
+    @State private var state = _FutureBuilderState<T>()
     
     public init(future: AnyPublisher<T, Error>, initialData: T? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.future = future
         self.initialData = initialData
         self.content = buider
         if let data = initialData {
-            self.snapshot = .withData(.unknown, data: data)
+            state.snapshot = .withData(.unknown, data: data)
         }
     }
     
     public var body: some View {
-        if snapshot.connectionState == .unknown {
+        if state.snapshot.connectionState == .unknown {
             content(.waiting())
                 .onReceive(_getFuture()) { snapshot in
-                    withAnimation {
-                        self.snapshot = snapshot
+                    withAnimation(state.animation) {
+                        state.snapshot = snapshot
                     }
                 }
         } else {
-            content(snapshot)
+            content(state.snapshot)
         }
     }
     

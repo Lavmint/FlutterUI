@@ -22,15 +22,3 @@ public struct Provider<Provider, Content: View>: View {
     }
 
 }
-
-open class MultiProvider: ObservableObject {
-    
-    public init() {
-        
-    }
-    
-    open func provide<T>(instanceOf: T.Type) -> T {
-        fatalError()
-    }
-    
-}

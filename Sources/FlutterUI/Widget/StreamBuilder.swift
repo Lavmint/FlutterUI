@@ -9,31 +9,36 @@ import Foundation
 import Combine
 import SwiftUI
 
+private struct _StreamBuilderState<T: Hashable> {
+    var snapshot: AsyncSnapshot<T> = .nothing()
+    var animation: Animation? = .default
+}
+
 public struct StreamBuilder<T: Hashable, Content: View>: View {
     
     let initialData: T?
     let stream: AnyPublisher<T, Error>?
     let content: (AsyncSnapshot<T>) -> Content
     
-    @State var snapshot: AsyncSnapshot<T> = .nothing()
+    @State private var state = _StreamBuilderState<T>()
     
     public init(initialData: T? = nil, stream: AnyPublisher<T, Error>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.initialData = initialData
         self.stream = stream
         self.content = buider
-        self.snapshot = initial()
+        state.snapshot = initial()
         if stream != nil {
-            self.snapshot = afterConnected(snapshot)
+            state.snapshot = afterConnected(state.snapshot)
         } else {
-            self.snapshot = afterDisconnected(snapshot)
+            state.snapshot = afterDisconnected(state.snapshot)
         }
     }
     
     public var body: some View {
-        content(snapshot)
-            .onReceive(getStream(snapshot)) { next in
-                withAnimation {
-                    self.snapshot = next
+        content(state.snapshot)
+            .onReceive(getStream(state.snapshot)) { next in
+                withAnimation(state.animation) {
+                    state.snapshot = next
                 }
             }
     }
@@ -72,6 +77,40 @@ public struct StreamBuilder<T: Hashable, Content: View>: View {
     
     public func initial() -> AsyncSnapshot<T> {
         return initialData == nil ? .nothing() : .withData(.unknown, data: initialData!)
+    }
+    
+    public func setAnimation(_ animation: Animation?) -> Self {
+        let copy = self
+        copy.state.animation = animation
+        return copy
+    }
+    
+}
+
+public extension StreamBuilder {
+    
+    init(subject: CurrentValueSubject<T, Never>, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+        self.init(
+            initialData: subject.value,
+            stream: subject.setFailureType(to: Error.self).eraseToAnyPublisher(),
+            buider: buider
+        )
+    }
+    
+    init(initialData: T? = nil, stream: AnyPublisher<T, Never>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+        self.init(
+            initialData: initialData,
+            stream: stream?.setFailureType(to: Error.self).eraseToAnyPublisher(),
+            buider: buider
+        )
+    }
+    
+    init(initialData: T? = nil, stream: PassthroughSubject<T, Never>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+        self.init(
+            initialData: initialData,
+            stream: stream?.setFailureType(to: Error.self).eraseToAnyPublisher(),
+            buider: buider
+        )
     }
     
 }
