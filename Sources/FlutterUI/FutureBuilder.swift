@@ -8,40 +8,41 @@
 import Foundation
 import Combine
 import SwiftUI
+import FlutterCore
 
-private struct _FutureBuilderState<T: Hashable> {
-    var snapshot: AsyncSnapshot<T> = .nothing()
+private struct _FutureBuilderConfiguration {
     var animation: Animation? = .default
 }
 
 /// https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html
-public struct FutureBuilder<T: Hashable, Content: View>: View {
+public struct FutureBuilder<T: Equatable, Content: View>: View {
     
-    let future: AnyPublisher<T, Error>
-    let initialData: T?
-    let content: (AsyncSnapshot<T>) -> Content
+    private let future: AnyPublisher<T, Error>
+    private let initialData: T?
+    private let content: (AsyncSnapshot<T>) -> Content
+    private var config = _FutureBuilderConfiguration()
     
-    @State private var state = _FutureBuilderState<T>()
+    @State private var snapshot: AsyncSnapshot<T> = .nothing()
     
     public init(future: AnyPublisher<T, Error>, initialData: T? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.future = future
         self.initialData = initialData
         self.content = buider
         if let data = initialData {
-            state.snapshot = .withData(.unknown, data: data)
+            snapshot = .withData(.nothing, data: data)
         }
     }
     
     public var body: some View {
-        if state.snapshot.connectionState == .unknown {
+        if snapshot.connectionState == .nothing {
             content(.waiting())
                 .onReceive(_getFuture()) { snapshot in
-                    withAnimation(state.animation) {
-                        state.snapshot = snapshot
+                    withAnimation(config.animation) {
+                        self.snapshot = snapshot
                     }
                 }
         } else {
-            content(state.snapshot)
+            content(snapshot)
         }
     }
     
@@ -58,8 +59,9 @@ public struct FutureBuilder<T: Hashable, Content: View>: View {
     }
     
     public func setAnimation(_ animation: Animation?) -> Self {
-        let copy = self
-        copy.state.animation = animation
+        var copy = self
+        copy.config.animation = animation
         return copy
     }
+    
 }

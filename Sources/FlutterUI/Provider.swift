@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import FlutterCore
 
 /// https://pub.dev/packages/provider
 public struct Provider<Provider, Content: View>: View {
@@ -22,16 +23,4 @@ public struct Provider<Provider, Content: View>: View {
         content(multiProvider.provide(instanceOf: Provider.self))
     }
 
-}
-
-open class MultiProvider: ObservableObject {
-    
-    public init() {
-        
-    }
-    
-    open func provide<T>(instanceOf: T.Type) -> T {
-        fatalError()
-    }
-    
 }

@@ -17,6 +17,10 @@ let package = Package(
     targets: [
         .target(
             name: "FlutterUI",
+            dependencies: ["FlutterCore"]
+        ),
+        .target(
+            name: "FlutterCore",
             dependencies: []
         )
     ]

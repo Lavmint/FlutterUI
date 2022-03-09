@@ -8,44 +8,45 @@
 import Foundation
 import Combine
 import SwiftUI
+import FlutterCore
 
-private struct _StreamBuilderState<T: Hashable> {
-    var snapshot: AsyncSnapshot<T> = .nothing()
+private struct _StreamBuilderConfiguration<T> {
     var animation: Animation? = .default
     var stream: AnyPublisher<T, Error>? = nil
 }
 
 /// https://api.flutter.dev/flutter/widgets/StreamBuilder-class.html
-public struct StreamBuilder<T: Hashable, Content: View>: View {
+public struct StreamBuilder<T: Equatable, Content: View>: View {
     
-    let initialData: T?
-    let content: (AsyncSnapshot<T>) -> Content
+    private let initialData: T?
+    private let content: (AsyncSnapshot<T>) -> Content
+    private var config = _StreamBuilderConfiguration<T>()
     
-    @State private var state = _StreamBuilderState<T>()
+    @State private var snapshot: AsyncSnapshot<T> = .nothing()
     
     public init(initialData: T? = nil, stream: AnyPublisher<T, Error>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.initialData = initialData
         self.content = buider
-        state.snapshot = initial()
-        state.stream = stream
-        if state.stream  != nil {
-            state.snapshot = afterConnected(state.snapshot)
+        self.snapshot = initial()
+        self.config.stream = stream
+        if config.stream != nil {
+            snapshot = afterConnected(snapshot)
         } else {
-            state.snapshot = afterDisconnected(state.snapshot)
+            snapshot = afterDisconnected(snapshot)
         }
     }
     
     public var body: some View {
-        content(state.snapshot)
-            .onReceive(getStream(state.snapshot)) { next in
-                withAnimation(state.animation) {
-                    state.snapshot = next
+        content(snapshot)
+            .onReceive(getStream(snapshot)) { next in
+                withAnimation(config.animation) {
+                    snapshot = next
                 }
             }
     }
     
     public func getStream(_ current: AsyncSnapshot<T>) -> AnyPublisher<AsyncSnapshot<T>, Never> {
-        guard let stream = state.stream  else {
+        guard let stream = config.stream  else {
             return Empty().eraseToAnyPublisher()
         }
         return stream
@@ -69,7 +70,7 @@ public struct StreamBuilder<T: Hashable, Content: View>: View {
     }
     
     public func afterDisconnected(_ current: AsyncSnapshot<T>) -> AsyncSnapshot<T> {
-        return current.inState(.unknown)
+        return current.inState(.nothing)
     }
     
     public func afterError(_ current: AsyncSnapshot<T>, error: NSError) -> AsyncSnapshot<T> {
@@ -77,18 +78,18 @@ public struct StreamBuilder<T: Hashable, Content: View>: View {
     }
     
     public func initial() -> AsyncSnapshot<T> {
-        return initialData == nil ? .nothing() : .withData(.unknown, data: initialData!)
+        return initialData == nil ? .nothing() : .withData(.nothing, data: initialData!)
     }
     
     public func setAnimation(_ animation: Animation?) -> Self {
-        let copy = self
-        copy.state.animation = animation
+        var copy = self
+        copy.config.animation = animation
         return copy
     }
     
     public func removeDuplicates() -> Self {
-        let copy = self
-        copy.state.stream = copy.state.stream?
+        var copy = self
+        copy.config.stream = config.stream?
             .removeDuplicates()
             .eraseToAnyPublisher()
         return copy

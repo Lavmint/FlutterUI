@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://api.flutter.dev/flutter/widgets/AsyncSnapshot-class.html
-public struct AsyncSnapshot<T: Hashable>: Hashable {
+public struct AsyncSnapshot<T: Equatable>: Equatable {
     
     public let connectionState: ConnectionState
     public let data: T?
@@ -47,7 +47,7 @@ public struct AsyncSnapshot<T: Hashable>: Hashable {
 public extension AsyncSnapshot {
     
     static func nothing() -> AsyncSnapshot<T> {
-        return .init(connectionState: .unknown, data: nil, error: nil)
+        return .init(connectionState: .nothing, data: nil, error: nil)
     }
     
     static func waiting() -> AsyncSnapshot<T> {
