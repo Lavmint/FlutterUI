@@ -12,8 +12,8 @@ import FlutterCore
 /// https://pub.dev/packages/provider
 public struct Provider<Provider, Content: View>: View {
     
-    @EnvironmentObject var multiProvider: MultiProvider
-    let content: (Provider) -> Content
+    @EnvironmentObject public var multiProvider: MultiProvider
+    public let content: (Provider) -> Content
     
     public init(@ViewBuilder builder: @escaping (Provider) -> Content) {
         self.content = builder

@@ -18,11 +18,11 @@ private struct _StreamBuilderConfiguration<T> {
 /// https://api.flutter.dev/flutter/widgets/StreamBuilder-class.html
 public struct StreamBuilder<T: Equatable, Content: View>: View {
     
-    private let initialData: T?
-    private let content: (AsyncSnapshot<T>) -> Content
+    public let initialData: T?
+    public let content: (AsyncSnapshot<T>) -> Content
     private var config = _StreamBuilderConfiguration<T>()
     
-    @State private var snapshot: AsyncSnapshot<T> = .nothing()
+    @State public var snapshot: AsyncSnapshot<T> = .nothing()
     
     public init(initialData: T? = nil, stream: AnyPublisher<T, Error>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.initialData = initialData

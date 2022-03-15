@@ -17,12 +17,12 @@ private struct _FutureBuilderConfiguration {
 /// https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html
 public struct FutureBuilder<T: Equatable, Content: View>: View {
     
-    private let future: AnyPublisher<T, Error>
-    private let initialData: T?
-    private let content: (AsyncSnapshot<T>) -> Content
+    public let future: AnyPublisher<T, Error>
+    public let initialData: T?
+    public let content: (AsyncSnapshot<T>) -> Content
     private var config = _FutureBuilderConfiguration()
     
-    @State private var snapshot: AsyncSnapshot<T> = .nothing()
+    @State public var snapshot: AsyncSnapshot<T> = .nothing()
     
     public init(future: AnyPublisher<T, Error>, initialData: T? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.future = future
