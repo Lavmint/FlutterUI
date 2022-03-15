@@ -99,7 +99,7 @@ public struct StreamBuilder<T: Equatable, Content: View>: View {
 
 public extension StreamBuilder {
     
-    init(subject: CurrentValueSubject<T, Never>, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+    init(_ subject: CurrentValueSubject<T, Never>, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.init(
             initialData: subject.value,
             stream: subject.setFailureType(to: Error.self).eraseToAnyPublisher(),
@@ -107,7 +107,7 @@ public extension StreamBuilder {
         )
     }
     
-    init<S>(subject: CurrentValueSubject<S, Never>, keyPath: KeyPath<S, T>, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+    init<S>(_ subject: CurrentValueSubject<S, Never>, _ keyPath: KeyPath<S, T>, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.init(
             initialData: subject.value[keyPath: keyPath],
             stream: subject.map(keyPath)
@@ -117,7 +117,7 @@ public extension StreamBuilder {
         )
     }
     
-    init(initialData: T? = nil, stream: Published<T>.Publisher, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+    init(initialData: T? = nil, _ stream: Published<T>.Publisher, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.init(
             initialData: initialData,
             stream: stream.setFailureType(to: Error.self).eraseToAnyPublisher(),
@@ -125,7 +125,7 @@ public extension StreamBuilder {
         )
     }
     
-    init(initialData: T? = nil, stream: AnyPublisher<T, Never>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+    init(initialData: T? = nil, _ stream: AnyPublisher<T, Never>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.init(
             initialData: initialData,
             stream: stream?.setFailureType(to: Error.self).eraseToAnyPublisher(),
@@ -133,12 +133,47 @@ public extension StreamBuilder {
         )
     }
     
-    init(initialData: T? = nil, stream: PassthroughSubject<T, Never>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
+    init(initialData: T? = nil, _ stream: PassthroughSubject<T, Never>? = nil, @ViewBuilder buider: @escaping (AsyncSnapshot<T>) -> Content) {
         self.init(
             initialData: initialData,
             stream: stream?.setFailureType(to: Error.self).eraseToAnyPublisher(),
             buider: buider
         )
+    }
+    
+}
+
+/// https://api.flutter.dev/flutter/dart-async/StreamView-class.html
+public extension StreamBuilder {
+    
+    static func viewer<S: Equatable, T: Equatable, C: View>(_ subject: CurrentValueSubject<S, Never>, _ keyPath: KeyPath<S, T>, @ViewBuilder content: @escaping (T) -> C) -> StreamBuilder<T, C>  {
+        StreamBuilder<T, C>(subject, keyPath) { snapshot in
+            content(snapshot.data!)
+        }
+    }
+    
+    static func viewer<T: Equatable, C: View>(_ subject: CurrentValueSubject<T, Never>, @ViewBuilder content: @escaping (T) -> C) -> StreamBuilder<T, C>  {
+        StreamBuilder<T, C>(subject) { snapshot in
+            content(snapshot.data!)
+        }
+    }
+    
+    static func viewer<C: View>(initialData: T? = nil, stream: Published<T>.Publisher, @ViewBuilder content: @escaping (T?) -> C) -> StreamBuilder<T, C>  {
+        StreamBuilder<T, C>(initialData: initialData, stream) { snapshot in
+            content(snapshot.data)
+        }
+    }
+    
+    static func viewer<C: View>(initialData: T? = nil, stream: AnyPublisher<T, Never>? = nil, @ViewBuilder content: @escaping (T?) -> C) -> StreamBuilder<T, C>  {
+        StreamBuilder<T, C>(initialData: initialData, stream) { snapshot in
+            content(snapshot.data)
+        }
+    }
+    
+    static func viewer<C: View>(initialData: T? = nil, stream: PassthroughSubject<T, Never>? = nil, @ViewBuilder content: @escaping (T?) -> C) -> StreamBuilder<T, C>  {
+        StreamBuilder<T, C>(initialData: initialData, stream) { snapshot in
+            content(snapshot.data)
+        }
     }
     
 }
