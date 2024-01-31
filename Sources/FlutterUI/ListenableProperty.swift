@@ -1,0 +1,52 @@
+//
+//  File.swift
+//  
+//
+//  Created by Alexey Averkin on 31.01.2024.
+//
+
+import Foundation
+import SwiftUI
+
+public struct ListenableProperty<O: ObservableObject, T: Equatable, V: View>: View {
+
+    let object: O
+    let keyPath: KeyPath<O, T>
+    @ViewBuilder let content: (T) -> V
+
+    public init(_ object: O, _ keyPath: KeyPath<O, T>, @ViewBuilder builder: @escaping (T) -> V) {
+        self.object = object
+        self.keyPath = keyPath
+        self.content = builder
+    }
+
+    public var body: some View {
+        ListenableObject(object) { obj in
+            SingleContentView(
+                value: obj[keyPath: keyPath],
+                content: content
+            )
+            .toEquatable()
+        }
+    }
+
+}
+
+fileprivate struct SingleContentView<T: Equatable, V: View>: View, Equatable {
+
+    let value: T
+    @ViewBuilder let content: (T) -> V
+
+    var body: some View {
+        content(value)
+    }
+
+    static func == (lhs: SingleContentView<T, V>, rhs: SingleContentView<T, V>) -> Bool {
+        return lhs.value == rhs.value
+    }
+
+    func toEquatable() -> EquatableView<Self> {
+        return EquatableView(content: self)
+    }
+
+}

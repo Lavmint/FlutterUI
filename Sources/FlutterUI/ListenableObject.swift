@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// https://api.flutter.dev/flutter/widgets/ValueListenableBuilder-class.html
-public struct ValueListenableBuilder<VL: ObservableObject, Content: View>: View {
+public struct ListenableObject<VL: ObservableObject, Content: View>: View {
     
     @ObservedObject public var listenable: VL
     public let content: (VL) -> Content
