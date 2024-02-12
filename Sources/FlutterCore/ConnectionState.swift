@@ -6,7 +6,7 @@
 //
 
 /// https://api.flutter.dev/flutter/widgets/ConnectionState.html
-public enum ConnectionState: Hashable {
+public enum ConnectionState {
     case nothing
     case active
     case waiting

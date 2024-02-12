@@ -12,9 +12,9 @@ public struct ListenableProperty<O: ObservableObject, T: Equatable, V: View>: Vi
 
     let object: O
     let keyPath: KeyPath<O, T>
-    @ViewBuilder let content: (T) -> V
+    @ViewBuilder let content: (ObservedObject<O>) -> V
 
-    public init(_ object: O, _ keyPath: KeyPath<O, T>, @ViewBuilder builder: @escaping (T) -> V) {
+    public init(_ object: O, _ keyPath: KeyPath<O, T>, @ViewBuilder builder: @escaping (ObservedObject<O>) -> V) {
         self.object = object
         self.keyPath = keyPath
         self.content = builder
@@ -23,7 +23,8 @@ public struct ListenableProperty<O: ObservableObject, T: Equatable, V: View>: Vi
     public var body: some View {
         ListenableObject(object) { obj in
             SingleContentView(
-                value: obj[keyPath: keyPath],
+                value: obj.wrappedValue[keyPath: keyPath],
+                object: obj,
                 content: content
             )
             .toEquatable()
@@ -32,16 +33,17 @@ public struct ListenableProperty<O: ObservableObject, T: Equatable, V: View>: Vi
 
 }
 
-fileprivate struct SingleContentView<T: Equatable, V: View>: View, Equatable {
+fileprivate struct SingleContentView<T: Equatable, V: View, O: ObservableObject>: View, Equatable {
 
     let value: T
-    @ViewBuilder let content: (T) -> V
+    let object: ObservedObject<O>
+    @ViewBuilder let content: (ObservedObject<O>) -> V
 
     var body: some View {
-        content(value)
+        content(object)
     }
 
-    static func == (lhs: SingleContentView<T, V>, rhs: SingleContentView<T, V>) -> Bool {
+    static func == (lhs: SingleContentView<T, V, O>, rhs: SingleContentView<T, V, O>) -> Bool {
         return lhs.value == rhs.value
     }
 

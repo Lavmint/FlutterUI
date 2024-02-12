@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://api.flutter.dev/flutter/widgets/AsyncSnapshot-class.html
-public struct AsyncSnapshot<T: Equatable>: Equatable {
+public struct AsyncSnapshot<T> {
     
     public let connectionState: ConnectionState
     public let data: T?

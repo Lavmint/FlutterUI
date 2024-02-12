@@ -10,17 +10,17 @@ import SwiftUI
 
 /// https://api.flutter.dev/flutter/widgets/ValueListenableBuilder-class.html
 public struct ListenableObject<VL: ObservableObject, Content: View>: View {
-    
+
     @ObservedObject public var listenable: VL
-    public let content: (VL) -> Content
-    
-    public init(_ listenable: VL, @ViewBuilder builder: @escaping (VL) -> Content) {
+    public let content: (ObservedObject<VL>) -> Content
+
+    public init(_ listenable: VL, @ViewBuilder builder: @escaping (ObservedObject<VL>) -> Content) {
         _listenable = .init(wrappedValue: listenable)
         self.content = builder
     }
-    
+
     public var body: some View {
-        content(listenable)
+        content(_listenable)
     }
-    
+
 }
